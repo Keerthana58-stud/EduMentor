@@ -1,0 +1,10 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Namespace — isolates all EduMentor resources from other cluster workloads
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: edumentor
+  labels:
+    app: edumentor
+    managed-by: kubectl

@@ -1,0 +1,25 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# ConfigMap — non-sensitive environment variables shared across pods
+# Sensitive values (JWT secret, Groq API key) live in secret.yaml instead
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: edumentor-config
+  namespace: edumentor
+  labels:
+    app: edumentor
+data:
+  # MongoDB connection string — uses the in-cluster service DNS name
+  # Format:  mongodb://<service-name>.<namespace>.svc.cluster.local:<port>
+  MONGODB_URI: "mongodb://mongodb-service.edumentor.svc.cluster.local:27017"
+
+  # Database name used by motor/pymongo
+  DB_NAME: "edumentor"
+
+  # FastAPI app log level
+  LOG_LEVEL: "info"
+
+  # CORS allowed origins (comma-separated) — frontend NodePort + localhost dev
+  # Update the NodePort IP to your Minikube IP after running: minikube ip
+  ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:5173"

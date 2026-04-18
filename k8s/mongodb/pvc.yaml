@@ -1,0 +1,18 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# PersistentVolumeClaim — requests storage from the PV above
+# The MongoDB Deployment mounts this claim so data survives pod restarts
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongodb-pvc
+  namespace: edumentor
+  labels:
+    app: mongodb
+    tier: database
+spec:
+  accessModes:
+    - ReadWriteOnce               
+  resources:
+    requests:
+      storage: 2Gi                # How much storage the pod is requesting

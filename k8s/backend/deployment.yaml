@@ -1,0 +1,98 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Backend Deployment — FastAPI + Uvicorn
+# Pulls env vars from ConfigMap (non-sensitive) and Secret (sensitive)
+# Communicates with MongoDB via cluster DNS, and with Groq via external internet
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: edumentor
+  labels:
+    app: backend
+    tier: api
+spec:
+  replicas: 2                         # 2 replicas for load distribution & HA
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate               # Zero-downtime deploys
+    rollingUpdate:
+      maxSurge: 1                     # Spin up 1 extra pod during update
+      maxUnavailable: 0               # Never have fewer than desired replicas
+  template:
+    metadata:
+      labels:
+        app: backend
+        tier: api
+    spec:
+      containers:
+        - name: backend
+          image: edumentor-backend:latest   
+          imagePullPolicy: IfNotPresent     
+          ports:
+            - containerPort: 8000
+              name: fastapi
+
+          # ── Environment from ConfigMap (non-sensitive) ─────────────────────
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: edumentor-config
+                  key: MONGODB_URI
+
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: edumentor-config
+                  key: DB_NAME
+
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: edumentor-config
+                  key: LOG_LEVEL
+
+            # ── Secrets (sensitive) ──────────────────────────────────────────
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: edumentor-secrets
+                  key: JWT_SECRET
+
+            - name: GROQ_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: edumentor-secrets
+                  key: GROQ_API_KEY
+
+          # ── Resource limits ──────────────────────────────────────────────────
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          # ── Liveness probe — restart pod if FastAPI hangs ────────────────────
+          livenessProbe:
+            httpGet:
+              path: /                  # Root endpoint returns {"message": "..."}
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # ── Readiness probe — only send traffic when app is ready ────────────
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3

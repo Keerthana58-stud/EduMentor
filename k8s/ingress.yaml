@@ -1,0 +1,43 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Ingress — single hostname entry point (optional but recommended)
+# Prerequisites:
+#   minikube addons enable ingress
+#   Add to C:\Windows\System32\drivers\etc\hosts (run as Administrator):
+#     <minikube-ip>  edumentor.local
+#
+# Then open: http://edumentor.local in your browser
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: edumentor-ingress
+  namespace: edumentor
+  labels:
+    app: edumentor
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+spec:
+  ingressClassName: nginx           # Requires the nginx ingress controller addon
+  rules:
+    - host: edumentor.local         # Maps to <minikube-ip> via /etc/hosts
+      http:
+        paths:
+          # ── All /api/* traffic → FastAPI backend ──────────────────────────
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 8000
+
+          # ── Everything else → React frontend (SPA catch-all) ──────────────
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80

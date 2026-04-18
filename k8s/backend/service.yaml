@@ -1,0 +1,25 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Backend Service — ClusterIP (internal) + NodePort for direct browser testing
+#
+# The Nginx frontend proxy calls "backend-service:8000" inside the cluster.
+# NodePort 30800 lets you hit the API directly from your host machine:
+#   http://<minikube-ip>:30800/api/...
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: edumentor
+  labels:
+    app: backend
+    tier: api
+spec:
+  type: NodePort
+  selector:
+    app: backend              # Routes to pods labelled app=backend
+  ports:
+    - name: fastapi
+      protocol: TCP
+      port: 8000              # ClusterIP port (used by nginx.conf proxy_pass)
+      targetPort: 8000        # Container port
+      nodePort: 30800         # External port on Minikube node (30000–32767)

@@ -1,0 +1,22 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# MongoDB Service — ClusterIP (internal only)
+# Other pods reach MongoDB via DNS: mongodb-service.edumentor.svc.cluster.local
+# This DNS name is what goes into the MONGODB_URI ConfigMap value
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+  namespace: edumentor
+  labels:
+    app: mongodb
+    tier: database
+spec:
+  type: ClusterIP           # Not exposed outside the cluster — DB should never be public
+  selector:
+    app: mongodb            # Routes traffic to pods with this label
+  ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017           # Port the Service listens on (inside cluster)
+      targetPort: 27017     # Port on the MongoDB container

@@ -1,0 +1,23 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# PersistentVolume — allocates physical storage on the Minikube node's disk
+# This is a hostPath PV suited for local Minikube development.
+# For production, replace with a cloud provider StorageClass (e.g., gp2, pd-ssd)
+# ──────────────────────────────────────────────────────────────────────────────
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mongodb-pv
+  namespace: edumentor
+  labels:
+    app: mongodb
+    tier: database
+spec:
+  capacity:
+    storage: 2Gi                  # Total storage allocated to MongoDB
+  accessModes:
+    - ReadWriteOnce               # Only one node can mount this at a time
+  persistentVolumeReclaimPolicy: Retain   # Keep data even if PVC is deleted
+  storageClassName: standard      # Must match PVC's storageClassName
+  hostPath:
+    path: /data/edumentor-mongodb # Actual path on Minikube VM disk
+    type: DirectoryOrCreate       # Creates the directory if it doesn't exist

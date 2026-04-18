@@ -1,0 +1,25 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Test files
+test_*.py
+debug_*.py
+
+# Local .env (secrets injected via Kubernetes Secret)
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
