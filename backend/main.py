@@ -42,6 +42,14 @@ app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 def read_root():
     return {"message": "Welcome to EduMentor API"}
 
+@app.get("/health")
+def health_check():
+    import os
+    return {
+        "status": "healthy",
+        "environment": "production" if os.getenv("RENDER") else "development"
+    }
+
 @app.get("/debug-settings")
 def debug_settings():
     import os
